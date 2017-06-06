@@ -1,0 +1,23 @@
+{
+    "name": "iamface/laravel-square",
+    "description": "A package to easily integrate Square Connect into Laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jared Ivory",
+            "email": "iamface@users.noreply.github.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "classmap": [
+            "database"
+        ],
+        "psr-4": {
+            "App\\": "app/",
+            "Iamface\\LaravelSquare\\": "packages/iamface/laravel-square/src"
+        }
+    }
+}
