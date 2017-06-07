@@ -1,3 +1,3 @@
 <?php
 
-// TODO add routes
+Route::get('index', 'iamface\laravelsquare\LaravelSquareController@index');
