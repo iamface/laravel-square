@@ -8,6 +8,6 @@ class LaravelSquareController extends Controller
 {
     public function index()
     {
-
+        dd('working');
     }
 }
