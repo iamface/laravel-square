@@ -8,7 +8,9 @@
             "email": "iamface@users.noreply.github.com"
         }
     ],
-    "require": {},
+    "require": {
+      "square/connect": "~2.1"
+    },
     "require-dev": {
       "phpunit/phpunit": "~4.0"
     },
