@@ -29,12 +29,47 @@ class LaravelSquareController extends Controller
         dd($this->_locations);
     }
 
-    public function getCustomers($locationId = null) {
-        // TODO return all customer records
+    /**
+     * Returns all customer records
+     *
+     * @return \SquareConnect\Model\Customer[] {Object}
+     */
+    public function getCustomers() {
+        return $this->_getCustomers();
     }
 
-    public function getCustomer() {
-        // TODO return a specific customer record
+    /**
+     * Returns a customer record
+     *
+     * @param $param {String}
+     *
+     * @return \SquareConnect\Model\Customer {Object}
+     */
+    public function getCustomer($param) {
+        $identifier = (strpos($param, '@')) ? 'email_address' : 'id';
+
+        $customers = $this->_getCustomers();
+
+        $method = null;
+        switch ($identifier) {
+            case 'email_address':
+                $method = 'getEmailAddress';
+                break;
+            case 'id':
+                $method = 'getId';
+                break;
+        }
+
+        $customerRecord = new \stdClass();
+
+        foreach ($customers as $customer) {
+            if ($customer->{$method}() === $param) {
+                $customerRecord = $customer;
+                break;
+            }
+        }
+
+        return $customerRecord;
     }
 
     public function authorizeCard() {
