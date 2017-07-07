@@ -3,12 +3,15 @@
 namespace Iamface\LaravelSquare;
 
 use App\Http\Controllers\Controller;
+use Iamface\LaravelSquare\LaravelSquareError;
 use SquareConnect\Api\CustomersApi;
 use SquareConnect\Api\LocationsApi;
 use SquareConnect\Configuration;
 
 class LaravelSquareController extends Controller
 {
+    const CUSTOMER_NOT_FOUND = 'Customer not found!';
+
     private $_currency;
     private $_locations;
     private $_locationName;
@@ -60,16 +63,13 @@ class LaravelSquareController extends Controller
                 break;
         }
 
-        $customerRecord = new \stdClass();
-
         foreach ($customers as $customer) {
             if ($customer->{$method}() === $param) {
-                $customerRecord = $customer;
-                break;
+                return response()->json(json_decode($customer));
             }
         }
 
-        return $customerRecord;
+        return LaravelSquareError::throwError(['message' => self::CUSTOMER_NOT_FOUND], 404);
     }
 
     public function authorizeCard() {
