@@ -24,7 +24,7 @@ class LaravelSquareController extends Controller
         // Set Square token
         Configuration::getDefaultConfiguration()->setAccessToken(config('laravelSquare.token'));
 
-        $this->_locations = $this->_getLocations();
+        $this->_locations = $this->_getLocations(config('laravelSquare.non_capable_locations'));
     }
 
     public function index()
@@ -106,9 +106,12 @@ class LaravelSquareController extends Controller
     /**
      * Returns an array of locations
      *
+     * @param $non_capable_locations {Boolean}
+     * Include non-capable credit card processing locations
+     *
      * @return \SquareConnect\Model\Location[] {Array}
      */
-    private function _getLocations()
+    private function _getLocations($non_capable_locations)
     {
         $locationsAPI = new LocationsApi();
 
@@ -116,16 +119,21 @@ class LaravelSquareController extends Controller
 
         $locs = array();
         foreach ($locations as $location) {
-            // Get location capabilities
-            $capabilities = $location->getCapabilities();
 
-            if (isset($capabilities)) {
-                foreach ($capabilities as $capability) {
-                    // Only use locations that have credit card processing
-                    if ($capability === 'CREDIT_CARD_PROCESSING') {
-                        array_push($locs, $location);
+            if (!$non_capable_locations) {
+                // Get location capabilities
+                $capabilities = $location->getCapabilities();
+
+                if (isset($capabilities)) {
+                    foreach ($capabilities as $capability) {
+                        // Only use locations that have credit card processing
+                        if ($capability === 'CREDIT_CARD_PROCESSING') {
+                            array_push($locs, $location);
+                        }
                     }
                 }
+            } else { // Include all locations whether or not they can process credit cards
+                array_push($locs, $location);
             }
         }
 
