@@ -3,7 +3,7 @@
 namespace Iamface\LaravelSquare;
 
 use App\Http\Controllers\Controller;
-use Iamface\LaravelSquare\LaravelSquareError;
+use Illuminate\Support\Facades\Config;
 use SquareConnect\Api\CustomersApi;
 use SquareConnect\Api\LocationsApi;
 use SquareConnect\Configuration;
@@ -18,13 +18,15 @@ class LaravelSquareController extends Controller
 
     public function __construct()
     {
-        $this->_currency = config('laravelSquare.currency');
-        $this->_locationName = config('laravelSquare.location');
+        if (Config::has('laravelSquare')) {
+            $this->_currency = config('laravelSquare.currency');
+            $this->_locationName = config('laravelSquare.location');
 
-        // Set Square token
-        Configuration::getDefaultConfiguration()->setAccessToken(config('laravelSquare.token'));
+            // Set Square token
+            Configuration::getDefaultConfiguration()->setAccessToken(config('laravelSquare.token'));
 
-        $this->_locations = $this->_getLocations(config('laravelSquare.non_capable_locations'));
+            $this->_locations = $this->_getLocations(config('laravelSquare.non_capable_locations'));
+        }
     }
 
     public function index()
