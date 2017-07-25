@@ -3,6 +3,7 @@
 namespace Iamface\LaravelSquare;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use SquareConnect\Api\CustomersApi;
 use SquareConnect\Api\LocationsApi;
@@ -37,10 +38,65 @@ class LaravelSquareController extends Controller
     /**
      * Returns all customer records
      *
+     * @param Request $request
+     *
      * @return \SquareConnect\Model\Customer[] {Object}
      */
-    public function getCustomers() {
-        return $this->_getCustomers();
+    public function getCustomers(Request $request) {
+        $customers = $this->_getCustomers();
+
+        $input = $request->input();
+
+        $cust = [];
+
+        foreach ($customers as $customer) {
+            //print_r($customer);exit();
+            if (count($input)) {
+                $c = [];
+
+                foreach ($input as $data) {
+                    switch ($data) {
+                        case 'id': $c[$data] = $customer->getId(); break;
+                        case 'created_at': $c[$data] = $customer->getCreatedAt(); break;
+                        case 'updated_at': $c[$data] = $customer->getUpdatedAt(); break;
+                        case 'cards': $c[$data] = $customer->getCards(); break;
+                        case 'first_name': $c[$data] = $customer->getGivenName(); break;
+                        case 'last_name': $c[$data] = $customer->getFamilyName(); break;
+                        case 'nickname': $c[$data] = $customer->getNickname(); break;
+                        case 'company': $c[$data] = $customer->getCompanyName(); break;
+                        case 'email': $c[$data] = $customer->getEmailAddress(); break;
+                        case 'address': $c[$data] = $customer->getAddress(); break;
+                        case 'phone': $c[$data] = $customer->getPhoneNUmber(); break;
+                        case 'reference_id': $c[$data] = $customer->getReferenceId(); break;
+                        case 'note': $c[$data] = $customer->getNote(); break;
+                        case 'preferences': $c[$data] = $customer->getPreferences(); break;
+                        case 'groups': $c[$data] = $customer->getGroups(); break;
+                    }
+                }
+            } else {
+                $c = [
+                    'id'           => $customer->getId(),
+                    'created_at'   => $customer->getCreatedAt(),
+                    'updated_at'   => $customer->getUpdatedAt(),
+                    'cards'        => $customer->getCards(),
+                    'first_name'   => $customer->getGivenName(),
+                    'last_name'    => $customer->getFamilyName(),
+                    'nickname'     => $customer->getNickname(),
+                    'company'      => $customer->getCompanyName(),
+                    'email'        => $customer->getEmailAddress(),
+                    'address'      => $customer->getAddress(),
+                    'phone'        => $customer->getPhoneNumber(),
+                    'reference_id' => $customer->getReferenceId(),
+                    'note'         => $customer->getNote(),
+                    'preferences'  => $customer->getPreferences(),
+                    'groups'       => $customer->getGroups()
+                ];
+            }
+
+            array_push($cust, $c);
+        }
+
+        return response()->json($cust);
     }
 
     /**
