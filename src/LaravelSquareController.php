@@ -50,11 +50,10 @@ class LaravelSquareController extends Controller
         $cust = [];
 
         foreach ($customers as $customer) {
-            //print_r($customer);exit();
             if (count($input)) {
                 $c = [];
 
-                foreach ($input as $data) {
+                foreach (explode(',', $input['info']) as $data) {
                     switch ($data) {
                         case 'id': $c[$data] = $customer->getId(); break;
                         case 'created_at': $c[$data] = $customer->getCreatedAt(); break;
