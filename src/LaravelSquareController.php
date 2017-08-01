@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use SquareConnect\Api\CustomersApi;
 use SquareConnect\Api\LocationsApi;
+use SquareConnect\Api\TransactionsApi;
 use SquareConnect\Configuration;
+use SquareConnect\Model\ChargeRequest;
 
 class LaravelSquareController extends Controller
 {
@@ -129,8 +131,32 @@ class LaravelSquareController extends Controller
         return LaravelSquareError::throwError(['message' => self::CUSTOMER_NOT_FOUND], 404);
     }
 
-    public function authorizeCard() {
-        // TODO authorize card for transaction
+    /**
+     * Authorize card for a transaction
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function authorizeCard(Request $request) {
+        $input = $request->input();
+
+        $transaction = new TransactionsApi();
+
+        $body = new ChargeRequest([
+            'card_nonce' => $input['nonce'],
+            'amount_money' => [
+                'amount' => $input['amount'],
+                'currency' => $this->_currency
+            ],
+            'idempotency_key' => uniqid()
+        ]);
+
+        try {
+            $transaction->charge($this->_locationName, $body)->getTransaction();
+        } catch (\Exception $e) {
+            return LaravelSquareError::throwError(['message' => 'Unable to create authorization.'], 500);
+        }
     }
 
     public function listAuthorizations() {
