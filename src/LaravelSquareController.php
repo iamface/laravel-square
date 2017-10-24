@@ -159,6 +159,15 @@ class LaravelSquareController extends Controller
         }
     }
 
+    public function listLocations() {
+        // TODO list locations
+    }
+
+    public function listTransactions($param) {
+        // TODO list transactions
+        dd($param);
+    }
+
     public function listAuthorizations() {
         // TODO return a list of authorizations by location
     }
