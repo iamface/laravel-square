@@ -159,8 +159,54 @@ class LaravelSquareController extends Controller
         }
     }
 
+    /**
+     * List locations
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function listLocations() {
-        // TODO list locations
+        $locations = [];
+
+        // If at least one location exists
+        if (count($this->_locations)) {
+            foreach ($this->_locations as $location) {
+                // If the location has an address listed
+                if ($address = $location->getAddress()) {
+                    $addressArray = [
+                        'address_line_1'                  => $address->getAddressLine1(),
+                        'address_line_2'                  => $address->getAddressLine2(),
+                        'address_line_3'                  => $address->getAddressLine3(),
+                        'locality'                        => $address->getLocality(),
+                        'sublocality'                     => $address->getSublocality(),
+                        'sublocality_2'                   => $address->getSublocality2(),
+                        'sublocality_3'                   => $address->getSublocality3(),
+                        'administrative_district_level_1' => $address->getAdministrativeDistrictLevel1(),
+                        'administrative_district_level_2' => $address->getAdministrativeDistrictLevel2(),
+                        'administrative_district_level_3' => $address->getAdministrativeDistrictLevel3(),
+                        'postal_code'                     => $address->getPostalCode(),
+                        'country'                         => $address->getCountry(),
+                        'first_name'                      => $address->getFirstName(),
+                        'last_name'                       => $address->getLastName(),
+                        'organization'                    => $address->getOrganization()
+                    ];
+                }
+
+                $location = [
+                    'id'           => $location->getId(),
+                    'name'         => $location->getName(),
+                    'address'      => (isset($addressArray)) ? $addressArray : [],
+                    'timezone'     => $location->getTimezone(),
+                    'capabilities' => $location->getCapabilities()
+                ];
+
+                // Add location to return response
+                array_push($locations, $location);
+            }
+
+            return response()->json($locations);
+        } else {
+            return LaravelSquareError::throwError(['message' => 'No locations found.'], 404);
+        }
     }
 
     public function listTransactions($param) {
