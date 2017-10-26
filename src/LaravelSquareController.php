@@ -14,6 +14,7 @@ use SquareConnect\Model\ChargeRequest;
 class LaravelSquareController extends Controller
 {
     const CUSTOMER_NOT_FOUND = 'Customer not found!';
+    const NO_CUSTOMERS_FOUND = 'No customers found!';
 
     private $_currency;
     private $_locations;
@@ -51,53 +52,60 @@ class LaravelSquareController extends Controller
 
         $cust = [];
 
-        foreach ($customers as $customer) {
-            if (count($input)) {
-                $c = [];
+        if (count($customers)) {
+            foreach ($customers as $customer) {
+                // Parameters used
+                if (count($input)) {
+                    $c = [];
 
-                foreach (explode(',', $input['info']) as $data) {
-                    switch ($data) {
-                        case 'id': $c[$data] = $customer->getId(); break;
-                        case 'created_at': $c[$data] = $customer->getCreatedAt(); break;
-                        case 'updated_at': $c[$data] = $customer->getUpdatedAt(); break;
-                        case 'cards': $c[$data] = $customer->getCards(); break;
-                        case 'first_name': $c[$data] = $customer->getGivenName(); break;
-                        case 'last_name': $c[$data] = $customer->getFamilyName(); break;
-                        case 'nickname': $c[$data] = $customer->getNickname(); break;
-                        case 'company': $c[$data] = $customer->getCompanyName(); break;
-                        case 'email': $c[$data] = $customer->getEmailAddress(); break;
-                        case 'address': $c[$data] = $customer->getAddress(); break;
-                        case 'phone': $c[$data] = $customer->getPhoneNUmber(); break;
-                        case 'reference_id': $c[$data] = $customer->getReferenceId(); break;
-                        case 'note': $c[$data] = $customer->getNote(); break;
-                        case 'preferences': $c[$data] = $customer->getPreferences(); break;
-                        case 'groups': $c[$data] = $customer->getGroups(); break;
+                    foreach (explode(',', $input['info']) as $data) {
+                        switch ($data) {
+                            case 'id': $c[$data] = $customer->getId(); break;
+                            case 'created_at': $c[$data] = $customer->getCreatedAt(); break;
+                            case 'updated_at': $c[$data] = $customer->getUpdatedAt(); break;
+                            case 'cards': $c[$data] = $customer->getCards(); break;
+                            case 'first_name': $c[$data] = $customer->getGivenName(); break;
+                            case 'last_name': $c[$data] = $customer->getFamilyName(); break;
+                            case 'nickname': $c[$data] = $customer->getNickname(); break;
+                            case 'company': $c[$data] = $customer->getCompanyName(); break;
+                            case 'email': $c[$data] = $customer->getEmailAddress(); break;
+                            case 'address': $c[$data] = $customer->getAddress(); break;
+                            case 'phone': $c[$data] = $customer->getPhoneNUmber(); break;
+                            case 'reference_id': $c[$data] = $customer->getReferenceId(); break;
+                            case 'note': $c[$data] = $customer->getNote(); break;
+                            case 'preferences': $c[$data] = $customer->getPreferences(); break;
+                            case 'groups': $c[$data] = $customer->getGroups(); break;
+                        }
                     }
+                } else { // Return all nodes
+                    $c = [
+                        'id'           => $customer->getId(),
+                        'created_at'   => $customer->getCreatedAt(),
+                        'updated_at'   => $customer->getUpdatedAt(),
+                        'cards'        => $customer->getCards(),
+                        'first_name'   => $customer->getGivenName(),
+                        'last_name'    => $customer->getFamilyName(),
+                        'nickname'     => $customer->getNickname(),
+                        'company'      => $customer->getCompanyName(),
+                        'email'        => $customer->getEmailAddress(),
+                        'address'      => $customer->getAddress(),
+                        'phone'        => $customer->getPhoneNumber(),
+                        'reference_id' => $customer->getReferenceId(),
+                        'note'         => $customer->getNote(),
+                        'preferences'  => $customer->getPreferences(),
+                        'groups'       => $customer->getGroups()
+                    ];
                 }
-            } else {
-                $c = [
-                    'id'           => $customer->getId(),
-                    'created_at'   => $customer->getCreatedAt(),
-                    'updated_at'   => $customer->getUpdatedAt(),
-                    'cards'        => $customer->getCards(),
-                    'first_name'   => $customer->getGivenName(),
-                    'last_name'    => $customer->getFamilyName(),
-                    'nickname'     => $customer->getNickname(),
-                    'company'      => $customer->getCompanyName(),
-                    'email'        => $customer->getEmailAddress(),
-                    'address'      => $customer->getAddress(),
-                    'phone'        => $customer->getPhoneNumber(),
-                    'reference_id' => $customer->getReferenceId(),
-                    'note'         => $customer->getNote(),
-                    'preferences'  => $customer->getPreferences(),
-                    'groups'       => $customer->getGroups()
-                ];
+
+                // Add customer to return response
+                array_push($cust, $c);
             }
 
-            array_push($cust, $c);
+            return response()->json($cust);
+        } else {
+            // No customers found
+            return LaravelSquareError::throwError(['message' => self::NO_CUSTOMERS_FOUND], 404);
         }
-
-        return response()->json($cust);
     }
 
     /**
@@ -108,6 +116,7 @@ class LaravelSquareController extends Controller
      * @return \SquareConnect\Model\Customer {Object}
      */
     public function getCustomer($param) {
+        // Determine identifier by either email address or customer id
         $identifier = (strpos($param, '@')) ? 'email_address' : 'id';
 
         $customers = $this->_getCustomers();
@@ -122,13 +131,20 @@ class LaravelSquareController extends Controller
                 break;
         }
 
-        foreach ($customers as $customer) {
-            if ($customer->{$method}() === $param) {
-                return response()->json(json_decode($customer));
+        if (count($customers)) {
+            foreach ($customers as $customer) {
+                if ($customer->{$method}() === $param) {
+                    // Customer match found
+                    return response()->json(json_decode($customer));
+                }
             }
-        }
 
-        return LaravelSquareError::throwError(['message' => self::CUSTOMER_NOT_FOUND], 404);
+            // No customer match found
+            return LaravelSquareError::throwError(['message' => self::CUSTOMER_NOT_FOUND], 404);
+        } else {
+            // No customers found
+            return LaravelSquareError::throwError(['message' => self::NO_CUSTOMERS_FOUND], 404);
+        }
     }
 
     /**
@@ -143,6 +159,7 @@ class LaravelSquareController extends Controller
 
         $transaction = new TransactionsApi();
 
+        // Create charge body
         $body = new ChargeRequest([
             'card_nonce' => $input['nonce'],
             'amount_money' => [
@@ -255,7 +272,7 @@ class LaravelSquareController extends Controller
 
         $locations = $locationsAPI->listLocations()->getLocations();
 
-        $locs = array();
+        $locs = [];
         foreach ($locations as $location) {
 
             if (!$non_capable_locations) {
