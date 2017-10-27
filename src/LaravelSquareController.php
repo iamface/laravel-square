@@ -10,6 +10,7 @@ use SquareConnect\Api\LocationsApi;
 use SquareConnect\Api\TransactionsApi;
 use SquareConnect\Configuration;
 use SquareConnect\Model\ChargeRequest;
+use Validator;
 
 class LaravelSquareController extends Controller
 {
@@ -31,11 +32,6 @@ class LaravelSquareController extends Controller
 
             $this->_locations = $this->_getLocations(config('laravelSquare.non_capable_locations'));
         }
-    }
-
-    public function index()
-    {
-        dd($this->_locations);
     }
 
     /**
@@ -155,6 +151,16 @@ class LaravelSquareController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function authorizeCard(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'nonce'  => 'required|string',
+            'amount' => 'required'
+        ]);
+
+        // Validate input
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+
         $input = $request->input();
 
         $transaction = new TransactionsApi();
