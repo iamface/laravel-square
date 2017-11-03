@@ -14,8 +14,9 @@ use Validator;
 
 class LaravelSquareController extends Controller
 {
-    const CUSTOMER_NOT_FOUND = 'Customer not found!';
-    const NO_CUSTOMERS_FOUND = 'No customers found!';
+    const CUSTOMER_NOT_FOUND   = 'Customer not found!';
+    const NO_CUSTOMERS_FOUND   = 'No customers found!';
+    const AUTHORIZATION_FAILED = 'Unable to create authorization.';
 
     private $_currency;
     private $_locations;
@@ -178,7 +179,7 @@ class LaravelSquareController extends Controller
         try {
             $transaction->charge($this->_locationName, $body)->getTransaction();
         } catch (\Exception $e) {
-            return LaravelSquareError::throwError(['message' => 'Unable to create authorization.'], 500);
+            return LaravelSquareError::throwError(['message' => self::AUTHORIZATION_FAILED], 422);
         }
     }
 
